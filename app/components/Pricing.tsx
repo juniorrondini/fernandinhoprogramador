@@ -22,69 +22,88 @@ const plans = [
   },
 ]
 
+// Estilização de cada plano
+const planStyles = {
+  Free: {
+    background: "bg-gray-800/60",
+    border: "border-gray-500",
+    text: "text-white",
+    hoverBg: "hover:bg-gray-700/80",
+    hoverBorder: "hover:border-gray-400",
+  },
+  Silver: {
+    background: "bg-gradient-to-br from-gray-600 via-gray-500 to-gray-600",
+    border: "border-gray-400",
+    text: "text-gray-50",
+    hoverBg: "hover:from-gray-500 hover:to-gray-400",
+    hoverBorder: "hover:border-gray-300",
+  },
+  Gold: {
+    background: "bg-gradient-to-br from-yellow-500 via-yellow-400 to-yellow-500",
+    border: "border-yellow-400",
+    text: "text-yellow-100",
+    hoverBg: "hover:from-yellow-400 hover:to-yellow-300",
+    hoverBorder: "hover:border-yellow-200",
+  },
+}
+
 export default function Pricing() {
   return (
-    <section className="py-12 bg-gradient-to-b from-purple-900 to-black relative">
-      <motion.div
-        className="absolute inset-0 bg-purple-900 opacity-10 rounded-3xl mx-4 md:mx-12"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.1 }}
-        transition={{ duration: 0.5 }}
-      />
-      <div className="container mx-auto px-4 relative z-10">
-        <h2 className="text-3xl font-bold text-center mb-8 text-white">Nossos Planos</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative"
-            >
-              <Card
-                className={`transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-gradient-to-b from-purple-900 to-black overflow-hidden
-                ${plan.name === "Silver" ? "border-2 border-gray-400" : plan.name === "Gold" ? "border-2 border-yellow-400" : ""}`}
-              >
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-center text-white">{plan.name}</CardTitle>
-                  <CardDescription className="text-xl text-center text-gray-300">{plan.price}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="list-disc list-inside text-gray-300">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx}>{feature}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                  <Button
-                    variant={plan.name === "Gold" ? "default" : "outline"}
-                    className="transition-all duration-300 hover:scale-105 bg-purple-700 text-white hover:bg-purple-600"
-                  >
-                    Escolher Plano
-                  </Button>
-                </CardFooter>
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-purple-900 to-transparent opacity-50" />
-              </Card>
-              {(plan.name === "Silver" || plan.name === "Gold") && (
+    <section className="py-16 bg-black flex justify-center">
+      <div className="container mx-auto px-4">
+        <h2 className="text-4xl font-extrabold text-center mb-12 text-white uppercase tracking-wide drop-shadow-lg">
+          Nossos Planos
+        </h2>
+
+        {/* Caixa cinza ao redor dos planos */}
+        <div className="bg-gray-800/80 p-10 rounded-xl shadow-2xl border border-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {plans.map((plan, index) => {
+              const styles = planStyles[plan.name] || planStyles.Free
+              return (
                 <motion.div
-                  className={`absolute -inset-0.5 bg-gradient-to-r ${plan.name === "Silver" ? "from-gray-400 to-gray-600" : "from-yellow-400 to-yellow-600"} rounded-lg z-[-1] opacity-75`}
-                  animate={{
-                    opacity: [0.5, 0.75, 0.5],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "reverse",
-                  }}
-                />
-              )}
-            </motion.div>
-          ))}
+                  key={index}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="relative group"
+                >
+                  <Card
+                    className={`relative ${styles.background} ${styles.border} border-2 rounded-lg overflow-hidden shadow-xl transition-all duration-300 hover:scale-105 ${styles.hoverBg} ${styles.hoverBorder}`}
+                  >
+                    <CardHeader>
+                      <CardTitle className={`text-3xl font-bold text-center drop-shadow-md ${styles.text}`}>
+                        {plan.name}
+                      </CardTitle>
+                      <CardDescription className="text-2xl text-center text-gray-200">{plan.price}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc list-inside text-gray-100 text-lg">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx}>{feature}</li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter className="flex justify-center">
+                      <Button
+                        className={`px-6 py-3 text-lg font-semibold text-black rounded-lg shadow-lg transition-all duration-300 transform hover:scale-110 ${
+                          plan.name === "Gold"
+                            ? "bg-yellow-500 hover:bg-yellow-400"
+                            : plan.name === "Silver"
+                            ? "bg-gray-500 hover:bg-gray-400"
+                            : "bg-gray-600 hover:bg-gray-500"
+                        }`}
+                      >
+                        Escolher Plano
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>
   )
 }
-

@@ -4,20 +4,14 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
+    --background: 20 4% 10%;
     --foreground: 0 0% 100%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
-
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 100%;
-
-    --card: 240 10% 4%;
+    --card: rgba(0, 0, 0, 0.8);
     --card-foreground: 0 0% 100%;
 
-    --border: 240 5% 26%;
-    --input: 240 5% 26%;
+    --border: rgba(255, 255, 255, 0.2);
+    --input: rgba(255, 255, 255, 0.1);
 
     --primary: 271 81% 25%;
     --primary-foreground: 0 0% 100%;
@@ -25,55 +19,46 @@
     --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 271 81% 25%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 100%;
-
-    --ring: 240 5% 26%;
+    --ring: rgba(255, 255, 255, 0.3);
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 240 10% 4%;
     --foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
+    --card: rgba(0, 0, 0, 0.8);
     --card-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: rgba(255, 255, 255, 0.2);
+    --input: rgba(255, 255, 255, 0.1);
 
     --primary: 210 40% 98%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 85.7% 97.3%;
-
-    --ring: 217.2 32.6% 17.5%;
+    --ring: rgba(255, 255, 255, 0.3);
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer components {
+  .glass-effect {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
-  body {
-    @apply bg-background text-foreground;
+
+  .glowing-border {
+    border: 2px solid transparent;
+    background-image: linear-gradient(white, white), linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0));
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+    animation: border-animation 2s infinite linear;
+  }
+
+  @keyframes border-animation {
+    0% { transform: scaleX(1); }
+    50% { transform: scaleX(1.1); }
+    100% { transform: scaleX(1); }
   }
 }
-
