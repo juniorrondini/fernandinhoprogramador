@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { motion } from "framer-motion"
+import Image from "next/image";
+import { motion } from "framer-motion";
 
 export default function Profile() {
   return (
@@ -20,9 +20,19 @@ export default function Profile() {
         />
       </div>
 
-      {/* Nome e Cargo com alto contraste */}
+      {/* Nome e Cargo com alto contraste e responsivo */}
       <motion.h1
-        className="text-6xl font-extrabold text-white tracking-wide uppercase mb-2 drop-shadow-[0_0_15px_rgba(0,255,255,0.8)]"
+        className="
+          text-4xl 
+          sm:text-5xl 
+          md:text-6xl
+          font-extrabold 
+          text-white 
+          tracking-wide 
+          uppercase 
+          mb-2 
+          drop-shadow-[0_0_15px_rgba(0,255,255,0.8)]
+        "
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -30,7 +40,16 @@ export default function Profile() {
         Fernandinho Programador
       </motion.h1>
       <motion.h2
-        className="text-2xl text-blue-400 mb-4 font-semibold tracking-wide drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]"
+        className="
+          text-xl
+          sm:text-2xl
+          md:text-2xl
+          text-blue-400 
+          mb-4 
+          font-semibold 
+          tracking-wide 
+          drop-shadow-[0_0_10px_rgba(0,255,255,0.7)]
+        "
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -39,14 +58,14 @@ export default function Profile() {
       </motion.h2>
 
       {/* Descrição Profissional aprimorada */}
-      <p className="text-lg max-w-3xl text-gray-100 leading-relaxed mb-6 px-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)]">
+      <p className="text-base sm:text-lg max-w-3xl text-gray-100 leading-relaxed mb-6 px-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.7)]">
         Criador de soluções tecnológicas inovadoras. Experiência com inteligência artificial, blockchain e arquitetura
         de software para startups e grandes empresas. Sempre explorando novas tecnologias para transformar ideias em
         realidade.
       </p>
 
       {/* Botões de Contato aprimorados */}
-      <motion.div className="flex space-x-6">
+      <motion.div className="flex flex-wrap justify-center gap-6">
         <motion.a
           href="https://www.linkedin.com/in/seu-perfil"
           target="_blank"
@@ -67,5 +86,5 @@ export default function Profile() {
         </motion.a>
       </motion.div>
     </section>
-  )
+  );
 }
