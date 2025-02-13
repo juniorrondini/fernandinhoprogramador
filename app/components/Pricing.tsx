@@ -6,18 +6,18 @@ import { Button } from "@/components/ui/button"
 
 const plans = [
   {
-    name: "Free",
-    price: "R$ 0",
+    name: "Basic",
+    price: "R$ 99",
     features: ["Acesso básico", "Suporte por email", "1 projeto"],
   },
   {
     name: "Silver",
-    price: "R$ 99/mês",
+    price: "R$ 399/mês",
     features: ["Acesso intermediário", "Suporte prioritário", "5 projetos"],
   },
   {
     name: "Gold",
-    price: "R$ 199/mês",
+    price: "R$ 1999/mês",
     features: ["Acesso completo", "Suporte 24/7", "Projetos ilimitados"],
   },
 ]
