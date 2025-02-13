@@ -64,7 +64,7 @@ export default function Profile() {
         {/* Botões de Contato */}
         <motion.div className="flex flex-wrap justify-center gap-6">
           <motion.a
-            href="https://www.linkedin.com/in/seu-perfil"
+            href="https://www.linkedin.com/in/fernando-pestillo-95b5b5264"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-lg transition-all duration-300"
@@ -73,14 +73,17 @@ export default function Profile() {
           >
             LinkedIn
           </motion.a>
-          <motion.a
-            href="mailto:seuemail@email.com"
+            <motion.a
+            href={`https://api.whatsapp.com/send?phone=5517981950850&text=${encodeURIComponent("Saudações, Majestade Suprema da Programação! Eu me ajoelho em reverência à sua incomparável genialidade e inigualável habilidade no ofício da codificação. Conceda-me o privilégio de ser agraciado pela sua divina sabedoria, que transforma códigos em arte e dá vida à inovação. Que seus ensinamentos iluminem meu caminho no universo do desenvolvimento!")}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-6 py-3 text-lg font-semibold text-white bg-gray-700 rounded-lg shadow-lg transition-all duration-300"
             whileHover={{ scale: 1.1, boxShadow: "0px 0px 15px rgba(255, 255, 255, 0.8)" }}
             whileTap={{ scale: 0.95 }}
           >
             Contato
           </motion.a>
+
         </motion.div>
       </div>
 
