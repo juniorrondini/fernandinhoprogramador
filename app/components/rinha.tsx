@@ -54,7 +54,7 @@ const teamBSpecialAttacks = [
   "Raio X Digital", "Golpe de Bytes"
 ];
 
-// Cria os arrays de galos para cada time, usando a função getRandomInt determinística
+// Cria os arrays de galos para cada time (40 cada)
 const teamA: Rooster[] = teamANames.map((name, index) => ({
   id: index + 1,
   name,
@@ -71,7 +71,7 @@ const teamB: Rooster[] = teamBNames.map((name, index) => ({
   specialAttack: teamBSpecialAttacks[getRandomInt(0, teamBSpecialAttacks.length - 1)]
 }));
 
-// Função para exibir mensagens especiais (golpe fatal) – 10 variações
+// Função para exibir mensagens especiais (golpe fatal)
 const specialAttackMessages = (playerName: string, special: string, oppName: string) => [
   `💥 Inacreditável! ${playerName} usa ${special} e aniquila ${oppName}!`,
   `⚡ ${playerName} ativa ${special} e detona tudo!`,
@@ -89,17 +89,24 @@ const Rinha: React.FC = () => {
   const [roosterA, setRoosterA] = useState<Rooster | null>(null);
   const [roosterB, setRoosterB] = useState<Rooster | null>(null);
   const [selectedBet, setSelectedBet] = useState<'A' | 'B' | null>(null);
+  // Estado para o valor cru digitado e para o valor formatado
+  const [rawBet, setRawBet] = useState<string>('');
   const [betAmount, setBetAmount] = useState<string>('');
   const [result, setResult] = useState<{ outcome: 'Vitória' | 'Derrota'; amount: number } | null>(null);
   const [fightNarrative, setFightNarrative] = useState<string>('');
   const [isFighting, setIsFighting] = useState<boolean>(false);
 
-  // Seleciona os galos (quando não está em luta) e limpa o resultado anterior
+  // HP atual dos galos
+  const [currentHpA, setCurrentHpA] = useState<number>(0);
+  const [currentHpB, setCurrentHpB] = useState<number>(0);
+
+  // Seleciona os galos e define seus HP
   const handleRoosterASelect = (r: Rooster) => {
     if (isFighting) return;
     setResult(null);
     setFightNarrative('');
     setRoosterA(r);
+    setCurrentHpA(r.hp);
   };
 
   const handleRoosterBSelect = (r: Rooster) => {
@@ -107,6 +114,7 @@ const Rinha: React.FC = () => {
     setResult(null);
     setFightNarrative('');
     setRoosterB(r);
+    setCurrentHpB(r.hp);
   };
 
   const handleRadioChange = (bet: 'A' | 'B') => {
@@ -116,166 +124,160 @@ const Rinha: React.FC = () => {
     setSelectedBet(bet);
   };
 
+  // Atualiza o valor cru digitado e exibe sem formatação enquanto digita
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    const numericValue = input.replace(/[^\d]/g, '');
-    if (!numericValue) {
-      setBetAmount('');
-      return;
-    }
-    const valueNumber = parseInt(numericValue, 10);
-    const formatted = (valueNumber / 100).toLocaleString('pt-BR', {
+    const newValue = e.target.value;
+    setRawBet(newValue);
+    setBetAmount(newValue);
+  };
+
+  // Ao perder o foco, formata o valor para o padrão BRL com duas casas decimais
+  const handleBetBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    let input = rawBet;
+    input = input.replace(/[^\d.,]/g, '');
+    input = input.replace(/\./g, '');
+    input = input.replace(',', '.');
+    const numeric = parseFloat(input) || 0;
+    const formatted = numeric.toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     });
     setBetAmount(formatted);
+    setRawBet(formatted);
+  };
+
+  // Função recursiva que simula cada turno do combate
+  const runTurn = (
+    turn: number,
+    hpA: number,
+    hpB: number,
+    messages: string[],
+    callback: () => void
+  ) => {
+    // Se algum galo já estiver com 0 ou menos HP, finaliza a luta
+    if (hpA <= 0 || hpB <= 0) {
+      callback();
+      return;
+    }
+
+    // Calcula a probabilidade de A atacar (baseada no rating)
+    const baseProbA = roosterA!.rating / (roosterA!.rating + roosterB!.rating);
+    const roll = Math.random();
+    const attacker = roll < baseProbA ? 'A' : 'B';
+
+    // Verifica golpe especial com 35% de chance
+    const specialRoll = Math.random();
+    if (specialRoll < 0.35) {
+      // Golpe especial finaliza o oponente imediatamente
+      const turnMessage = attacker === 'A'
+        ? `🔥 ${roosterA!.name} usa ${roosterA!.specialAttack} e FINALIZA ${roosterB!.name} em um golpe fatal!`
+        : `⚡ ${roosterB!.name} usa ${roosterB!.specialAttack} e FINALIZA ${roosterA!.name} em um golpe fatal!`;
+      messages.push(turnMessage);
+      if (attacker === 'A') {
+        hpB = 0;
+      } else {
+        hpA = 0;
+      }
+      setCurrentHpA(hpA < 0 ? 0 : hpA);
+      setCurrentHpB(hpB < 0 ? 0 : hpB);
+      setFightNarrative(turnMessage);
+      // Aguarda 3 segundos e finaliza a luta
+      setTimeout(() => callback(), 3000);
+      return;
+    }
+
+    // Ataque normal
+    let dmg = getRandomInt(8, 12);
+    const turnMessage = attacker === 'A'
+      ? `💥 ${roosterA!.name} ataca e causa ${dmg} de dano!`
+      : `💥 ${roosterB!.name} ataca e causa ${dmg} de dano!`;
+    messages.push(turnMessage);
+
+    if (attacker === 'A') {
+      hpB = hpB - dmg;
+    } else {
+      hpA = hpA - dmg;
+    }
+
+    setCurrentHpA(hpA < 0 ? 0 : hpA);
+    setCurrentHpB(hpB < 0 ? 0 : hpB);
+    setFightNarrative(turnMessage);
+
+    // Aguarda 3 segundos para o próximo turno
+    setTimeout(() => {
+      if (hpA > 0 && hpB > 0) {
+        runTurn(turn + 1, hpA, hpB, messages, callback);
+      } else {
+        callback();
+      }
+    }, 3000);
   };
 
   const simulateFight = () => {
-    const numericBet = parseFloat(betAmount.replace(/[^\d.,]/g, '').replace(',', '.'));
-    if (!roosterA || !roosterB || !selectedBet || isNaN(numericBet) || numericBet <= 0) {
+    // Processa o valor de aposta
+    let numericBetString = betAmount.replace(/[^\d.,]/g, '');
+    numericBetString = numericBetString.replace(/\./g, '');
+    numericBetString = numericBetString.replace(',', '.');
+    const numericBet = parseFloat(numericBetString) || 0;
+
+    if (!roosterA || !roosterB || !selectedBet || numericBet <= 0) {
       alert('Selecione dois galos, escolha em qual apostar e informe um valor válido.');
       return;
     }
     if (isFighting) return;
 
-    const randomFactorA = 0.85 + Math.random() * 0.3;
-    const randomFactorB = 0.85 + Math.random() * 0.3;
-    const effectiveA = roosterA.rating * randomFactorA;
-    const effectiveB = roosterB.rating * randomFactorB;
-    const sumEffective = effectiveA + effectiveB;
-    const effectiveProbA = effectiveA / sumEffective;
-    const random = Math.random();
-    const winner = random < effectiveProbA ? 'A' : 'B';
-
-    let outcome: 'Vitória' | 'Derrota';
-    let winnings = 0;
-    if (selectedBet === winner) {
-      const baseProb =
-        selectedBet === 'A'
-          ? roosterA.rating / (roosterA.rating + roosterB.rating)
-          : roosterB.rating / (roosterA.rating + roosterB.rating);
-      const multiplier = 1 / baseProb;
-      winnings = numericBet * multiplier;
-      outcome = 'Vitória';
-    } else {
-      outcome = 'Derrota';
-    }
-    // Golpe especial com 25% de chance
-    let specialUsed = false;
-    if (Math.random() < 0.25) {
-      specialUsed = true;
-      outcome = 'Vitória';
-      const baseProbSpecial =
-        selectedBet === 'A'
-          ? roosterA.rating / (roosterA.rating + roosterB.rating)
-          : roosterB.rating / (roosterA.rating + roosterB.rating);
-      winnings = numericBet * (1 / baseProbSpecial) * 2;
-    }
-    const resultData = { outcome, amount: winnings };
-
-    const betName = selectedBet === 'A' ? roosterA.name : roosterB.name;
-    const opponentName = selectedBet === 'A' ? roosterB.name : roosterA.name;
-
-    const stage1Messages = [
-      "🥊 A arena se ilumina para o combate!",
-      "⚔️ Prepare-se! A batalha vai começar!",
-      "🔥 O clima esquenta... a luta está prestes a iniciar!",
-      "🚀 Os gladiadores se posicionam para a ação!",
-      "🏟️ A multidão ruge em expectativa!",
-      "✨ Os holofotes se acendem no ringue!",
-      "🌌 Energia cósmica invade a arena!"
-    ];
-
-    const stage2Messages = [
-      `👀 Olhe! ${roosterA.name} vs ${roosterB.name} se preparam para o embate!`,
-      `🤼‍♂️ Confronto anunciado: ${roosterA.name} desafia ${roosterB.name}!`,
-      `💥 Choque de titãs: ${roosterA.name} e ${roosterB.name} se encaram!`,
-      `🎯 Os competidores se alinham: ${roosterA.name} contra ${roosterB.name}!`,
-      `⚡ Que duelo! ${roosterA.name} e ${roosterB.name} estão prontos para a batalha!`
-    ];
-
-    const stage3NormalMessages = [
-      `⚡ ${betName} desferiu um golpe fulminante! 💥`,
-      `🔥 ${betName} avança com um ataque devastador! 🚀`,
-      `💪 Força suprema: ${betName} acerta um golpe certeiro! 🔥`,
-      `🤩 Manobra brilhante! ${betName} surpreende o adversário! 🌟`,
-      `💥 Impacto total! ${betName} derruba ${opponentName} com estilo! 🏆`,
-      "💥 Um soco de mestre! O público aplaude de pé!",
-      "🎇 Explosão de energia! A vitória se aproxima!"
-    ];
-    const stage3Messages = specialUsed
-      ? specialAttackMessages(
-          betName,
-          selectedBet === 'A' ? (roosterA.specialAttack || "") : (roosterB.specialAttack || ""),
-          opponentName
-        )
-      : stage3NormalMessages;
-
-    const stage4Messages = [
-      "🌟 O clímax se aproxima... A tensão está no ar!",
-      "🎇 A luta atinge seu auge, e tudo pode acontecer!",
-      "🚨 O momento decisivo se aproxima, prepare-se!",
-      "🔔 A multidão silencia enquanto o destino se decide!",
-      "🔥 O embate esquenta e a vitória está a um passo!",
-      "⏳ Cada segundo conta nesse duelo eletrizante!",
-      "🎆 A arena vibra com a energia do confronto!"
-    ];
-
-    const stage5Messages = outcome === 'Vitória'
-      ? [
-          `🏆 AVASSALADOR! ${betName} conquista a vitória com honra! 💥`,
-          `🎉 Vitória gloriosa! ${betName} reina absoluto! ⚡`,
-          `💥 Domínio total! ${betName} prevaleceu com força inigualável! 🔥`,
-          `👏 ${betName} demonstra sua superioridade e triunfa! 🚀`,
-          `🥇 Triunfo épico! ${betName} leva a glória ao topo! 🌟`,
-          "🎊 Uma vitória que ecoará na história!",
-          `${betName} encerra a luta com um feito inesquecível!`
-        ]
-      : [
-          `💔 DESASTROSO! ${betName} sucumbe aos ataques implacáveis! 😱`,
-          `😢 Infelicidade total! ${betName} não resiste ao poder de ${opponentName}! 💥`,
-          `😞 Derrota amarga! ${betName} é superado e cai! 🥀`,
-          `🙁 O golpe final foi devastador para ${betName}! ⚠️`,
-          `🚫 Sem chances! ${betName} foi derrotado de forma impressionante! 💔`,
-          "😩 Um fim trágico: a luta não foi suficiente!",
-          `${opponentName} domina a batalha e leva ${betName} à derrota!`
-        ];
-
+    // Reseta os HP para o início da luta
+    setCurrentHpA(roosterA.hp);
+    setCurrentHpB(roosterB.hp);
+    setResult(null);
+    setFightNarrative('');
     setIsFighting(true);
-    setFightNarrative(stage1Messages[Math.floor(Math.random() * stage1Messages.length)]);
-    setTimeout(() => {
-      setFightNarrative(stage2Messages[Math.floor(Math.random() * stage2Messages.length)]);
-    }, 4000);
-    setTimeout(() => {
-      setFightNarrative(stage3Messages[Math.floor(Math.random() * stage3Messages.length)]);
-    }, 8000);
-    setTimeout(() => {
-      setFightNarrative(stage4Messages[Math.floor(Math.random() * stage4Messages.length)]);
-    }, 12000);
-    setTimeout(() => {
-      setFightNarrative(stage5Messages[Math.floor(Math.random() * stage5Messages.length)]);
-    }, 16000);
-    setTimeout(() => {
-      setResult(resultData);
+
+    const messages: string[] = [];
+
+    // Inicia a simulação dos turnos até que um galo fique com HP <= 0
+    runTurn(1, roosterA.hp, roosterB.hp, messages, () => {
+      // Determina o vencedor com base no HP restante
+      let winner: 'A' | 'B';
+      if (currentHpA <= 0 && currentHpB > 0) {
+        winner = 'B';
+      } else if (currentHpB <= 0 && currentHpA > 0) {
+        winner = 'A';
+      } else {
+        winner = currentHpA >= currentHpB ? 'A' : 'B';
+      }
+
+      // Calcula o resultado da aposta usando os ratings iniciais
+      const baseProb = selectedBet === 'A'
+        ? roosterA.rating / (roosterA.rating + roosterB.rating)
+        : roosterB.rating / (roosterA.rating + roosterB.rating);
+      const multiplier = 1 / baseProb;
+      const finalOutcome = selectedBet === winner ? 'Vitória' : 'Derrota';
+      const finalWinnings = selectedBet === winner ? numericBet * multiplier : 0;
+
+      messages.push(
+        finalOutcome === 'Vitória'
+          ? `🏆 ${selectedBet === 'A' ? roosterA.name : roosterB.name} vence com ${selectedBet === 'A' ? currentHpA : currentHpB} HP restantes!`
+          : `💔 ${selectedBet === 'A' ? roosterA.name : roosterB.name} perdeu a luta!`
+      );
+
+      setFightNarrative(messages[messages.length - 1]);
+      setResult({ outcome: finalOutcome, amount: finalWinnings });
       setIsFighting(false);
-      setFightNarrative('');
-    }, 20000);
+    });
   };
 
-  let baseProbA = 0;
-  let baseProbB = 0;
+  // Cálculo das probabilidades para as barras de vida
+  let baseProbADisplay = 0;
+  let baseProbBDisplay = 0;
   if (roosterA && roosterB) {
     const total = roosterA.rating + roosterB.rating;
-    baseProbA = Math.round((roosterA.rating / total) * 100);
-    baseProbB = 100 - baseProbA;
+    baseProbADisplay = Math.round((roosterA.rating / total) * 100);
+    baseProbBDisplay = 100 - baseProbADisplay;
   }
 
-  const renderCard = (
-    r: Rooster,
-    onClick: () => void,
-    isSelected: boolean
-  ) => {
+  // Renderiza cada card de galo
+  const renderCard = (r: Rooster, onClick: () => void, isSelected: boolean) => {
     const cardStyle: React.CSSProperties = {
       position: 'relative',
       padding: '10px',
@@ -293,12 +295,8 @@ const Rinha: React.FC = () => {
       <div onClick={onClick} style={cardStyle}>
         <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '14px' }}>{r.name}</p>
         <p style={{ margin: '5px 0', fontSize: '12px' }}>Rating: {r.rating}</p>
-        {r.hp && <p style={{ margin: '5px 0', fontSize: '12px' }}>HP: {r.hp}</p>}
-        {r.specialAttack && (
-          <p style={{ margin: '5px 0', fontSize: '10px', fontStyle: 'italic' }}>
-            {r.specialAttack}
-          </p>
-        )}
+        <p style={{ margin: '5px 0', fontSize: '12px' }}>HP: {r.hp}</p>
+        <p style={{ margin: '5px 0', fontSize: '10px', fontStyle: 'italic' }}>{r.specialAttack}</p>
       </div>
     );
   };
@@ -314,6 +312,7 @@ const Rinha: React.FC = () => {
         boxSizing: 'border-box'
       }}
     >
+      {/* CSS injetado para keyframes e radio buttons */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -346,6 +345,7 @@ const Rinha: React.FC = () => {
         Arena de Rinha de Galos
       </h1>
 
+      {/* Seleção de Times */}
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
         {/* Time A */}
         <div style={{ flex: '1 1 300px', background: '#222', padding: '20px', borderRadius: '10px' }}>
@@ -366,7 +366,13 @@ const Rinha: React.FC = () => {
           {roosterA && (
             <div style={{ marginTop: '10px', textAlign: 'center' }}>
               <label style={{ cursor: 'pointer', fontSize: '14px' }}>
-                <input type="radio" className="square-radio" name="bet" checked={selectedBet === 'A'} onChange={() => handleRadioChange('A')} />
+                <input
+                  type="radio"
+                  className="square-radio"
+                  name="bet"
+                  checked={selectedBet === 'A'}
+                  onChange={() => handleRadioChange('A')}
+                />
                 Apostar no {roosterA.name}
               </label>
             </div>
@@ -392,7 +398,14 @@ const Rinha: React.FC = () => {
           {roosterB && (
             <div style={{ marginTop: '10px', textAlign: 'center' }}>
               <label style={{ cursor: 'pointer', fontSize: '14px' }}>
-                <input type="radio" className="square-radio" name="bet" checked={selectedBet === 'B'} onChange={() => handleRadioChange('B')} style={{ marginRight: '5px' }} />
+                <input
+                  type="radio"
+                  className="square-radio"
+                  name="bet"
+                  checked={selectedBet === 'B'}
+                  onChange={() => handleRadioChange('B')}
+                  style={{ marginRight: '5px' }}
+                />
                 Apostar no {roosterB.name}
               </label>
             </div>
@@ -400,33 +413,38 @@ const Rinha: React.FC = () => {
         </div>
       </div>
 
+      {/* Exibição das Probabilidades */}
       {roosterA && roosterB && (
         <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', margin: '30px 0' }}>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '16px' }}>
-              Chance {roosterA.name}: {baseProbA}%
+              Chance {roosterA.name}: {baseProbADisplay}%
             </p>
             <div style={{ width: '200px', height: '20px', background: '#555', borderRadius: '10px', margin: '0 auto' }}>
-              <div style={{ width: `${baseProbA}%`, height: '100%', background: '#4caf50', borderRadius: '10px' }}></div>
+              <div style={{ transition: 'width 0.5s ease', width: `${(currentHpA / (roosterA ? roosterA.hp : 1)) * 100}%`, height: '100%', background: '#4caf50', borderRadius: '10px' }}></div>
             </div>
+            {roosterA && <p style={{ fontSize: '14px', marginTop: '5px' }}>{currentHpA} / {roosterA.hp} HP</p>}
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '16px' }}>
-              Chance {roosterB.name}: {baseProbB}%
+              Chance {roosterB.name}: {baseProbBDisplay}%
             </p>
             <div style={{ width: '200px', height: '20px', background: '#555', borderRadius: '10px', margin: '0 auto' }}>
-              <div style={{ width: `${baseProbB}%`, height: '100%', background: '#f44336', borderRadius: '10px' }}></div>
+              <div style={{ transition: 'width 0.5s ease', width: `${(currentHpB / (roosterB ? roosterB.hp : 1)) * 100}%`, height: '100%', background: '#f44336', borderRadius: '10px' }}></div>
             </div>
+            {roosterB && <p style={{ fontSize: '14px', marginTop: '5px' }}>{currentHpB} / {roosterB.hp} HP</p>}
           </div>
         </div>
       )}
 
+      {/* Área de Aposta */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <input
           type="text"
           placeholder="R$ 0,00"
           value={betAmount}
           onChange={handleCurrencyChange}
+          onBlur={handleBetBlur}
           style={{
             padding: '10px',
             width: '250px',
@@ -455,14 +473,38 @@ const Rinha: React.FC = () => {
         </button>
       </div>
 
+      {/* Janela de Narrativa da Luta */}
       {isFighting && (
-        <div style={{ textAlign: 'center', padding: '20px', border: '2px solid #666', borderRadius: '10px', background: '#000', maxWidth: '600px', margin: '0 auto 30px', fontSize: '20px', minHeight: '80px' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '20px',
+            border: '2px solid #666',
+            borderRadius: '10px',
+            background: '#000',
+            maxWidth: '600px',
+            margin: '0 auto 20px',
+            fontSize: '20px',
+            minHeight: '80px'
+          }}
+        >
           {fightNarrative}
         </div>
       )}
 
+      {/* Exibição do Resultado Final */}
       {result && !isFighting && (
-        <div style={{ textAlign: 'center', padding: '20px', border: '2px solid #666', borderRadius: '10px', background: '#000', maxWidth: '400px', margin: '0 auto' }}>
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '20px',
+            border: '2px solid #666',
+            borderRadius: '10px',
+            background: '#000',
+            maxWidth: '400px',
+            margin: '0 auto'
+          }}
+        >
           <h2 style={{ color: result.outcome === 'Vitória' ? '#4caf50' : '#f44336', fontSize: '36px', marginBottom: '10px' }}>
             {result.outcome}
           </h2>
@@ -475,6 +517,17 @@ const Rinha: React.FC = () => {
       )}
     </div>
   );
+};
+
+// Função para formatar o valor de aposta ao sair do campo
+const handleBetBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  let input = e.target.value;
+  input = input.replace(/[^\d.,]/g, '');
+  input = input.replace(/\./g, '');
+  input = input.replace(',', '.');
+  const numeric = parseFloat(input) || 0;
+  const formatted = numeric.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  e.target.value = formatted;
 };
 
 export default Rinha;
