@@ -1,104 +1,136 @@
 "use client";
 import React, { useState } from 'react';
 
+// Gerador pseudo-aleatório com semente fixa (linear congruential generator)
+let seed = 12345;
+function seededRandom() {
+  seed = (seed * 16807) % 2147483647;
+  return (seed - 1) / 2147483646;
+}
+function getRandomInt(min: number, max: number) {
+  return Math.floor(seededRandom() * (max - min + 1)) + min;
+}
+
 type Rooster = {
   id: number;
   name: string;
   rating: number;
+  hp: number;
+  specialAttack: string;
 };
 
-// Lista de 50 galos – alguns com nomes de pessoas
-const roosters: Rooster[] = [
-  { id: 1, name: 'Capitão Bico', rating: 80 },
-  { id: 2, name: 'General Peninha', rating: 70 },
-  { id: 3, name: 'Coronel Asa', rating: 60 },
-  { id: 4, name: 'Sargento Penas', rating: 65 },
-  { id: 5, name: 'João Galo', rating: 85 },             // Alterado
-  { id: 6, name: 'Barão Bicudo', rating: 55 },
-  { id: 7, name: 'Doutor Plumagem', rating: 75 },
-  { id: 8, name: 'Marujo Plumoso', rating: 50 },
-  { id: 9, name: 'Lord Cocoricó', rating: 90 },
-  { id: 10, name: 'Carlos Galo', rating: 95 },           // Alterado
-  { id: 11, name: 'Imperador Galo', rating: 88 },
-  { id: 12, name: 'Duque do Penacho', rating: 78 },
-  { id: 13, name: 'Rei do Bico', rating: 82 },
-  { id: 14, name: 'Nobre Galonegro', rating: 68 },
-  { id: 15, name: 'Baronete das Penas', rating: 73 },
-  { id: 16, name: 'Cavaleiro de Asas', rating: 77 },
-  { id: 17, name: 'Gladiador de Plumas', rating: 91 },
-  { id: 18, name: 'Senhor das Esporas', rating: 83 },
-  { id: 19, name: 'Cientista do Bico', rating: 66 },
-  { id: 20, name: 'Pedro Penas', rating: 74 },           // Alterado
-  { id: 21, name: 'Furacão Alado', rating: 87 },
-  { id: 22, name: 'Vórtice de Penas', rating: 69 },
-  { id: 23, name: 'Trovão Bicudo', rating: 92 },
-  { id: 24, name: 'Falcão de Galo', rating: 64 },
-  { id: 25, name: 'Vingador Alado', rating: 86 },
-  { id: 26, name: 'Senhor Espora', rating: 72 },
-  { id: 27, name: 'Comandante das Asas', rating: 89 },
-  { id: 28, name: 'Viajante de Plumas', rating: 67 },
-  { id: 29, name: 'Guerreiro do Bico', rating: 93 },
-  { id: 30, name: 'Ricardo Galo', rating: 96 },         // Alterado
-  { id: 31, name: 'Cyber Galo', rating: 70 },
-  { id: 32, name: 'Neon Bico', rating: 75 },
-  { id: 33, name: 'Robo Asas', rating: 80 },
-  { id: 34, name: 'Hiper Plumagem', rating: 85 },
-  { id: 35, name: 'Laser Bicudo', rating: 90 },
-  { id: 36, name: 'Alpha Galótico', rating: 95 },
-  { id: 37, name: 'Beta Penacho', rating: 78 },
-  { id: 38, name: 'Omega Asas', rating: 82 },
-  { id: 39, name: 'Quantum Galo', rating: 88 },
-  { id: 40, name: 'André Bicudo', rating: 76 },         // Alterado
-  { id: 41, name: 'Futuro Alado', rating: 84 },
-  { id: 42, name: 'X-Treme Penas', rating: 89 },
-  { id: 43, name: 'Ultra Galonegro', rating: 92 },
-  { id: 44, name: 'Cybernetic Espora', rating: 87 },
-  { id: 45, name: 'Digital Plumagem', rating: 90 },
-  { id: 46, name: 'Neon Asas', rating: 83 },
-  { id: 47, name: 'Robo Peninha', rating: 79 },
-  { id: 48, name: 'Interstelar Galo', rating: 94 },
-  { id: 49, name: 'Futuro Bicudo', rating: 86 },
-  { id: 50, name: 'Marcos Galonegro', rating: 91 }       // Alterado
+// Arrays com nomes de galos para cada time
+const teamANames = [
+  'Capitão Bico', 'General Peninha', 'Coronel Cocoricó', 'Sargento Piufrio', 'João Galão',
+  'Carlos Bicudo', 'Pedro Penas', 'Ricardo Riscado', 'André do Bico', 'Marcos Maluco',
+  'Bruno Berrante', 'Miguel Frangão', 'Felipe do Frango', 'Fernando Foguinho', 'Gustavo Grão',
+  'Lucas Lero', 'Eduardo Estrondo', 'Victor Voador', 'Henrique Humor', 'Samuel Sorriso',
+  'Roberto Risonho', 'Leandro Ligeiro', 'Fábio Fanfarrão', 'Diego Destro', 'Rafael Riso',
+  'Sérgio Sônico', 'Renato Rabugento', 'Rodrigo Rabeca', 'Daniel Dourado', 'Thiago Treme',
+  'Vitor Veloz', 'Anderson Animado', 'Alex Alegre', 'Julio Jactancioso', 'Caio Cômico',
+  'Ramon Risonho', 'Otávio Ousado', 'Marcio Maroto', 'Elias Enrolado', 'Igor Incrível'
+];
+
+const teamBNames = [
+  'Luiz do Bico', 'Victor Frango', 'Pedro do Galo', 'Zé do Frango', 'Cyber Galo',
+  'Neon Bico', 'Robo Asas', 'Hiper Plumagem', 'Laser Bicudo', 'Alpha Galótico',
+  'Beta Penacho', 'Omega Asas', 'Quantum Galo', 'Futuro Alado', 'X-Treme Penas',
+  'Ultra Galonegro', 'Cybernetic Espora', 'Digital Plumagem', 'Neon Asas', 'Robo Peninha',
+  'Interstelar Galo', 'Futuro Bicudo', 'Zé do Galo', 'Xenon Galo', 'Solar Bicudo',
+  'Lunar Penas', 'Pixel Galo', 'Nano Asas', 'Fusion Bicudo', 'Robo-X Penas',
+  'Xenon Penas', 'Digital Asas', 'Futura Galonegro', 'Techno Bicudo', 'Cosmo Galo',
+  'Vortex Asas', 'Omega Pulse', 'Plasma Penas', 'Neon Cyborg', 'Hyper Flux'
+];
+
+// Arrays de ataques especiais para cada time (10 variações cada)
+const teamASpecialAttacks = [
+  "Bico Explosivo", "Pena Voadora", "Frangão Turbo", "Chute do Galinheiro",
+  "Rugido do Frango", "Bicada Surpresa", "Rabada Relâmpago", "Pena de Ouro",
+  "Golpe do Porco", "Frango Nuclear"
+];
+const teamBSpecialAttacks = [
+  "Laser de Neon", "Pulso Cibernético", "Explosão Digital", "Ataque de Plasma",
+  "Soco Galáctico", "Impacto Cósmico", "Bicada Futurista", "Tiro Quântico",
+  "Raio X Digital", "Golpe de Bytes"
+];
+
+// Cria os arrays de galos para cada time, usando a função getRandomInt determinística
+const teamA: Rooster[] = teamANames.map((name, index) => ({
+  id: index + 1,
+  name,
+  rating: getRandomInt(75, 95),
+  hp: getRandomInt(90, 120),
+  specialAttack: teamASpecialAttacks[getRandomInt(0, teamASpecialAttacks.length - 1)]
+}));
+
+const teamB: Rooster[] = teamBNames.map((name, index) => ({
+  id: index + 41,
+  name,
+  rating: getRandomInt(75, 95),
+  hp: getRandomInt(90, 120),
+  specialAttack: teamBSpecialAttacks[getRandomInt(0, teamBSpecialAttacks.length - 1)]
+}));
+
+// Função para exibir mensagens especiais (golpe fatal) – 10 variações
+const specialAttackMessages = (playerName: string, special: string, oppName: string) => [
+  `💥 Inacreditável! ${playerName} usa ${special} e aniquila ${oppName}!`,
+  `⚡ ${playerName} ativa ${special} e detona tudo!`,
+  `🔥 Golpe fatal: ${playerName} lança ${special} e garante a vitória!`,
+  `🚀 Surpresa cósmica! ${playerName} dispara ${special} e vence com louvor!`,
+  `🤩 Espetacular! ${playerName} libera ${special} e derruba ${oppName}!`,
+  `💫 Milagre de batalha! ${playerName} usa ${special} e conquista a vitória!`,
+  `🥇 ${playerName} surpreende a todos com ${special}, um golpe decisivo!`,
+  `🎉 ${playerName} explode com ${special} e transforma a luta!`,
+  `🌟 Golpe de mestre! ${playerName} ativa ${special} e arrasa ${oppName}!`,
+  `🚨 ${playerName} libera ${special} e sela a vitória!`
 ];
 
 const Rinha: React.FC = () => {
-  // Estados para seleção, aposta, resultado, narrativa e controle da simulação
   const [roosterA, setRoosterA] = useState<Rooster | null>(null);
   const [roosterB, setRoosterB] = useState<Rooster | null>(null);
   const [selectedBet, setSelectedBet] = useState<'A' | 'B' | null>(null);
-  const [betAmount, setBetAmount] = useState<string>(''); // valor com máscara
+  const [betAmount, setBetAmount] = useState<string>('');
   const [result, setResult] = useState<{ outcome: 'Vitória' | 'Derrota'; amount: number } | null>(null);
   const [fightNarrative, setFightNarrative] = useState<string>('');
   const [isFighting, setIsFighting] = useState<boolean>(false);
 
-  // Sempre que houver alteração, limpa resultados e narrativa
+  // Seleciona os galos (quando não está em luta) e limpa o resultado anterior
   const handleRoosterASelect = (r: Rooster) => {
-    if (roosterB?.id === r.id) return;
+    if (isFighting) return;
     setResult(null);
     setFightNarrative('');
     setRoosterA(r);
   };
 
   const handleRoosterBSelect = (r: Rooster) => {
-    if (roosterA?.id === r.id) return;
+    if (isFighting) return;
     setResult(null);
     setFightNarrative('');
     setRoosterB(r);
   };
 
-  const handleBetChange = (value: string) => {
-    setResult(null);
-    setFightNarrative('');
-    setBetAmount(value);
-  };
-
   const handleRadioChange = (bet: 'A' | 'B') => {
+    if (isFighting) return;
     setResult(null);
     setFightNarrative('');
     setSelectedBet(bet);
   };
 
-  // Função para simular a luta com narrativa (cada etapa dura 4 segundos)
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    const numericValue = input.replace(/[^\d]/g, '');
+    if (!numericValue) {
+      setBetAmount('');
+      return;
+    }
+    const valueNumber = parseInt(numericValue, 10);
+    const formatted = (valueNumber / 100).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+    setBetAmount(formatted);
+  };
+
   const simulateFight = () => {
     const numericBet = parseFloat(betAmount.replace(/[^\d.,]/g, '').replace(',', '.'));
     if (!roosterA || !roosterB || !selectedBet || isNaN(numericBet) || numericBet <= 0) {
@@ -107,7 +139,6 @@ const Rinha: React.FC = () => {
     }
     if (isFighting) return;
 
-    // Fatores aleatórios de sorte
     const randomFactorA = 0.85 + Math.random() * 0.3;
     const randomFactorB = 0.85 + Math.random() * 0.3;
     const effectiveA = roosterA.rating * randomFactorA;
@@ -130,97 +161,101 @@ const Rinha: React.FC = () => {
     } else {
       outcome = 'Derrota';
     }
+    // Golpe especial com 25% de chance
+    let specialUsed = false;
+    if (Math.random() < 0.25) {
+      specialUsed = true;
+      outcome = 'Vitória';
+      const baseProbSpecial =
+        selectedBet === 'A'
+          ? roosterA.rating / (roosterA.rating + roosterB.rating)
+          : roosterB.rating / (roosterA.rating + roosterB.rating);
+      winnings = numericBet * (1 / baseProbSpecial) * 2;
+    }
     const resultData = { outcome, amount: winnings };
 
-    // Definindo nomes para uso na narrativa
     const betName = selectedBet === 'A' ? roosterA.name : roosterB.name;
     const opponentName = selectedBet === 'A' ? roosterB.name : roosterA.name;
 
-    // Arrays de mensagens (várias variações com emojis)
     const stage1Messages = [
       "🥊 A arena se ilumina para o combate!",
       "⚔️ Prepare-se! A batalha vai começar!",
       "🔥 O clima esquenta... a luta está prestes a iniciar!",
       "🚀 Os gladiadores se posicionam para a ação!",
-      "🏟️ A multidão ruge em expectativa!"
+      "🏟️ A multidão ruge em expectativa!",
+      "✨ Os holofotes se acendem no ringue!",
+      "🌌 Energia cósmica invade a arena!"
     ];
 
     const stage2Messages = [
-      `👀 Olhe! ${roosterA.name} vs ${roosterB.name} estão prontos para o embate!`,
+      `👀 Olhe! ${roosterA.name} vs ${roosterB.name} se preparam para o embate!`,
       `🤼‍♂️ Confronto anunciado: ${roosterA.name} desafia ${roosterB.name}!`,
       `💥 Choque de titãs: ${roosterA.name} e ${roosterB.name} se encaram!`,
       `🎯 Os competidores se alinham: ${roosterA.name} contra ${roosterB.name}!`,
       `⚡ Que duelo! ${roosterA.name} e ${roosterB.name} estão prontos para a batalha!`
     ];
 
-    const stage3VictoryMessages = [
+    const stage3NormalMessages = [
       `⚡ ${betName} desferiu um golpe fulminante! 💥`,
       `🔥 ${betName} avança com um ataque devastador! 🚀`,
-      `💪 ${betName} mostra sua força suprema com um golpe certeiro! 🔥`,
-      `🤩 ${betName} surpreende com uma manobra brilhante! 🌟`,
-      `💥 Impacto total! ${betName} derruba o adversário com estilo! 🏆`
+      `💪 Força suprema: ${betName} acerta um golpe certeiro! 🔥`,
+      `🤩 Manobra brilhante! ${betName} surpreende o adversário! 🌟`,
+      `💥 Impacto total! ${betName} derruba ${opponentName} com estilo! 🏆`,
+      "💥 Um soco de mestre! O público aplaude de pé!",
+      "🎇 Explosão de energia! A vitória se aproxima!"
     ];
-
-    const stage3DefeatMessages = [
-      `😵 ${betName} tenta se defender, mas falha miseravelmente! 💔`,
-      `💔 Uma esquiva falha! ${betName} sofre um golpe brutal! 😱`,
-      `🛡️ A defesa vacila: ${betName} é atingido com força! ⚠️`,
-      `👎 ${betName} não teve chance e leva um golpe devastador! 😞`,
-      `😢 Dor e derrota: ${betName} é dominado pelo adversário! 🥀`
-    ];
+    const stage3Messages = specialUsed
+      ? specialAttackMessages(
+          betName,
+          selectedBet === 'A' ? (roosterA.specialAttack || "") : (roosterB.specialAttack || ""),
+          opponentName
+        )
+      : stage3NormalMessages;
 
     const stage4Messages = [
       "🌟 O clímax se aproxima... A tensão está no ar!",
       "🎇 A luta atinge seu auge, e tudo pode acontecer!",
       "🚨 O momento decisivo se aproxima, prepare-se!",
       "🔔 A multidão silencia enquanto o destino se decide!",
-      "🔥 O embate esquenta e a vitória está a um passo!"
+      "🔥 O embate esquenta e a vitória está a um passo!",
+      "⏳ Cada segundo conta nesse duelo eletrizante!",
+      "🎆 A arena vibra com a energia do confronto!"
     ];
 
-    const stage5VictoryMessages = [
-      `🏆 AVASSALADOR! ${betName} conquista a vitória com honra! 💥`,
-      `🎉 Vitória gloriosa! ${betName} reina absoluto! ⚡`,
-      `💥 Domínio total! ${betName} prevaleceu com força inigualável! 🔥`,
-      `👏 ${betName} demonstra sua superioridade e triunfa! 🚀`,
-      `🥇 Triunfo épico! ${betName} leva a glória ao topo! 🌟`
-    ];
+    const stage5Messages = outcome === 'Vitória'
+      ? [
+          `🏆 AVASSALADOR! ${betName} conquista a vitória com honra! 💥`,
+          `🎉 Vitória gloriosa! ${betName} reina absoluto! ⚡`,
+          `💥 Domínio total! ${betName} prevaleceu com força inigualável! 🔥`,
+          `👏 ${betName} demonstra sua superioridade e triunfa! 🚀`,
+          `🥇 Triunfo épico! ${betName} leva a glória ao topo! 🌟`,
+          "🎊 Uma vitória que ecoará na história!",
+          `${betName} encerra a luta com um feito inesquecível!`
+        ]
+      : [
+          `💔 DESASTROSO! ${betName} sucumbe aos ataques implacáveis! 😱`,
+          `😢 Infelicidade total! ${betName} não resiste ao poder de ${opponentName}! 💥`,
+          `😞 Derrota amarga! ${betName} é superado e cai! 🥀`,
+          `🙁 O golpe final foi devastador para ${betName}! ⚠️`,
+          `🚫 Sem chances! ${betName} foi derrotado de forma impressionante! 💔`,
+          "😩 Um fim trágico: a luta não foi suficiente!",
+          `${opponentName} domina a batalha e leva ${betName} à derrota!`
+        ];
 
-    const stage5DefeatMessages = [
-      `💔 DESASTROSO! ${betName} sucumbe aos ataques implacáveis! 😱`,
-      `😢 Infelicidade total! ${betName} não resiste ao poder do adversário! 💥`,
-      `😞 Derrota amarga! ${betName} é superado e cai! 🥀`,
-      `🙁 O golpe final foi devastador para ${betName}! ⚠️`,
-      `🚫 Sem chances! ${betName} foi derrotado de forma impressionante! 💔`
-    ];
-
-    // Inicia a sequência de narrativa – cada etapa dura 4000ms
     setIsFighting(true);
     setFightNarrative(stage1Messages[Math.floor(Math.random() * stage1Messages.length)]);
-
     setTimeout(() => {
       setFightNarrative(stage2Messages[Math.floor(Math.random() * stage2Messages.length)]);
     }, 4000);
-
     setTimeout(() => {
-      if (resultData.outcome === 'Vitória') {
-        setFightNarrative(stage3VictoryMessages[Math.floor(Math.random() * stage3VictoryMessages.length)]);
-      } else {
-        setFightNarrative(stage3DefeatMessages[Math.floor(Math.random() * stage3DefeatMessages.length)]);
-      }
+      setFightNarrative(stage3Messages[Math.floor(Math.random() * stage3Messages.length)]);
     }, 8000);
-
     setTimeout(() => {
       setFightNarrative(stage4Messages[Math.floor(Math.random() * stage4Messages.length)]);
     }, 12000);
-
     setTimeout(() => {
-      if (resultData.outcome === 'Vitória') {
-        setFightNarrative(stage5VictoryMessages[Math.floor(Math.random() * stage5VictoryMessages.length)]);
-      } else {
-        setFightNarrative(stage5DefeatMessages[Math.floor(Math.random() * stage5DefeatMessages.length)]);
-      }
+      setFightNarrative(stage5Messages[Math.floor(Math.random() * stage5Messages.length)]);
     }, 16000);
-
     setTimeout(() => {
       setResult(resultData);
       setIsFighting(false);
@@ -228,7 +263,6 @@ const Rinha: React.FC = () => {
     }, 20000);
   };
 
-  // Cálculo das probabilidades base para exibição
   let baseProbA = 0;
   let baseProbB = 0;
   if (roosterA && roosterB) {
@@ -237,6 +271,38 @@ const Rinha: React.FC = () => {
     baseProbB = 100 - baseProbA;
   }
 
+  const renderCard = (
+    r: Rooster,
+    onClick: () => void,
+    isSelected: boolean
+  ) => {
+    const cardStyle: React.CSSProperties = {
+      position: 'relative',
+      padding: '10px',
+      border: '2px solid slategray',
+      borderRadius: '8px',
+      background: '#333',
+      cursor: isFighting ? 'default' : 'pointer',
+      textAlign: 'center',
+      ...(isSelected && {
+        animation: 'neonPulse 2s ease-in-out infinite',
+        borderColor: '#fff'
+      })
+    };
+    return (
+      <div onClick={onClick} style={cardStyle}>
+        <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '14px' }}>{r.name}</p>
+        <p style={{ margin: '5px 0', fontSize: '12px' }}>Rating: {r.rating}</p>
+        {r.hp && <p style={{ margin: '5px 0', fontSize: '12px' }}>HP: {r.hp}</p>}
+        {r.specialAttack && (
+          <p style={{ margin: '5px 0', fontSize: '10px', fontStyle: 'italic' }}>
+            {r.specialAttack}
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -244,45 +310,55 @@ const Rinha: React.FC = () => {
         color: '#eee',
         minHeight: '100vh',
         padding: '20px',
-        fontFamily: "'Orbitron', 'Press Start 2P', cursive, Arial, sans-serif",
-        boxSizing: 'border-box',
+        fontFamily: 'Roboto, Arial, sans-serif',
+        boxSizing: 'border-box'
       }}
     >
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+          @keyframes neonPulse {
+            0% { box-shadow: 0 0 5px #fff; }
+            50% { box-shadow: 0 0 20px #fff; }
+            100% { box-shadow: 0 0 5px #fff; }
+          }
+          input[type="radio"].square-radio {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-radius: 0;
+            margin-right: 5px;
+            outline: none;
+            cursor: pointer;
+          }
+          input[type="radio"].square-radio:checked {
+            background-color: #2196f3;
+            border-color: #2196f3;
+          }
+          `
+        }}
+      />
+
       <h1 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '36px' }}>
         Arena de Rinha de Galos
       </h1>
 
       <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
         {/* Time A */}
-        <div style={{ flex: '1 1 400px', background: '#222', padding: '20px', borderRadius: '10px' }}>
+        <div style={{ flex: '1 1 300px', background: '#222', padding: '20px', borderRadius: '10px' }}>
           <h2 style={{ textAlign: 'center', marginBottom: '15px', fontSize: '24px' }}>Time A</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: '10px',
-              maxHeight: '400px',
-              overflowY: 'auto',
-            }}
-          >
-            {roosters.map((r) => {
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+            {teamA.map((r) => {
               const isSelected = roosterA?.id === r.id;
-              const disabled = roosterB?.id === r.id;
               return (
-                <div
-                  key={r.id}
-                  onClick={() => handleRoosterASelect(r)}
-                  style={{
-                    padding: '10px',
-                    border: isSelected ? '2px solid #4caf50' : '2px solid transparent',
-                    borderRadius: '8px',
-                    background: disabled ? '#444' : '#333',
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    textAlign: 'center',
-                  }}
-                >
-                  <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '14px' }}>{r.name}</p>
-                  <p style={{ margin: '5px 0', fontSize: '12px' }}>Rating: {r.rating}</p>
+                <div key={r.id}>
+                  {renderCard(r, () => {
+                    handleRoosterASelect(r);
+                    setResult(null);
+                  }, isSelected)}
                 </div>
               );
             })}
@@ -290,49 +366,25 @@ const Rinha: React.FC = () => {
           {roosterA && (
             <div style={{ marginTop: '10px', textAlign: 'center' }}>
               <label style={{ cursor: 'pointer', fontSize: '14px' }}>
-                <input
-                  type="radio"
-                  name="bet"
-                  checked={selectedBet === 'A'}
-                  onChange={() => handleRadioChange('A')}
-                  style={{ marginRight: '5px' }}
-                />
-                Apostar neste galo
+                <input type="radio" className="square-radio" name="bet" checked={selectedBet === 'A'} onChange={() => handleRadioChange('A')} />
+                Apostar no {roosterA.name}
               </label>
             </div>
           )}
         </div>
 
         {/* Time B */}
-        <div style={{ flex: '1 1 400px', background: '#222', padding: '20px', borderRadius: '10px' }}>
+        <div style={{ flex: '1 1 300px', background: '#222', padding: '20px', borderRadius: '10px' }}>
           <h2 style={{ textAlign: 'center', marginBottom: '15px', fontSize: '24px' }}>Time B</h2>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-              gap: '10px',
-              maxHeight: '400px',
-              overflowY: 'auto',
-            }}
-          >
-            {roosters.map((r) => {
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+            {teamB.map((r) => {
               const isSelected = roosterB?.id === r.id;
-              const disabled = roosterA?.id === r.id;
               return (
-                <div
-                  key={r.id}
-                  onClick={() => handleRoosterBSelect(r)}
-                  style={{
-                    padding: '10px',
-                    border: isSelected ? '2px solid #f44336' : '2px solid transparent',
-                    borderRadius: '8px',
-                    background: disabled ? '#444' : '#333',
-                    cursor: disabled ? 'not-allowed' : 'pointer',
-                    textAlign: 'center',
-                  }}
-                >
-                  <p style={{ margin: '5px 0', fontWeight: 'bold', fontSize: '14px' }}>{r.name}</p>
-                  <p style={{ margin: '5px 0', fontSize: '12px' }}>Rating: {r.rating}</p>
+                <div key={r.id}>
+                  {renderCard(r, () => {
+                    handleRoosterBSelect(r);
+                    setResult(null);
+                  }, isSelected)}
                 </div>
               );
             })}
@@ -340,21 +392,14 @@ const Rinha: React.FC = () => {
           {roosterB && (
             <div style={{ marginTop: '10px', textAlign: 'center' }}>
               <label style={{ cursor: 'pointer', fontSize: '14px' }}>
-                <input
-                  type="radio"
-                  name="bet"
-                  checked={selectedBet === 'B'}
-                  onChange={() => handleRadioChange('B')}
-                  style={{ marginRight: '5px' }}
-                />
-                Apostar neste galo
+                <input type="radio" className="square-radio" name="bet" checked={selectedBet === 'B'} onChange={() => handleRadioChange('B')} style={{ marginRight: '5px' }} />
+                Apostar no {roosterB.name}
               </label>
             </div>
           )}
         </div>
       </div>
 
-      {/* Exibição das Probabilidades */}
       {roosterA && roosterB && (
         <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', margin: '30px 0' }}>
           <div style={{ textAlign: 'center' }}>
@@ -376,13 +421,12 @@ const Rinha: React.FC = () => {
         </div>
       )}
 
-      {/* Área de Aposta */}
       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <input
           type="text"
           placeholder="R$ 0,00"
           value={betAmount}
-          onChange={(e) => handleBetChange(e.target.value)}
+          onChange={handleCurrencyChange}
           style={{
             padding: '10px',
             width: '250px',
@@ -391,7 +435,7 @@ const Rinha: React.FC = () => {
             border: 'none',
             outline: 'none',
             fontSize: '18px',
-            color: '#000',
+            color: '#000'
           }}
         />
         <button
@@ -404,52 +448,22 @@ const Rinha: React.FC = () => {
             border: 'none',
             background: isFighting ? '#888' : '#2196f3',
             color: '#fff',
-            cursor: isFighting ? 'not-allowed' : 'pointer',
+            cursor: isFighting ? 'not-allowed' : 'pointer'
           }}
         >
           Apostar
         </button>
       </div>
 
-      {/* Janela de Narrativa da Luta */}
       {isFighting && (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '20px',
-            border: '2px solid #666',
-            borderRadius: '10px',
-            background: '#000',
-            maxWidth: '600px',
-            margin: '0 auto 30px',
-            fontSize: '20px',
-            minHeight: '80px',
-          }}
-        >
+        <div style={{ textAlign: 'center', padding: '20px', border: '2px solid #666', borderRadius: '10px', background: '#000', maxWidth: '600px', margin: '0 auto 30px', fontSize: '20px', minHeight: '80px' }}>
           {fightNarrative}
         </div>
       )}
 
-      {/* Exibição do Resultado Final */}
       {result && !isFighting && (
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '20px',
-            border: '2px solid #666',
-            borderRadius: '10px',
-            background: '#000',
-            maxWidth: '400px',
-            margin: '0 auto',
-          }}
-        >
-          <h2
-            style={{
-              color: result.outcome === 'Vitória' ? '#4caf50' : '#f44336',
-              fontSize: '36px',
-              marginBottom: '10px',
-            }}
-          >
+        <div style={{ textAlign: 'center', padding: '20px', border: '2px solid #666', borderRadius: '10px', background: '#000', maxWidth: '400px', margin: '0 auto' }}>
+          <h2 style={{ color: result.outcome === 'Vitória' ? '#4caf50' : '#f44336', fontSize: '36px', marginBottom: '10px' }}>
             {result.outcome}
           </h2>
           <p style={{ color: '#fff', fontSize: '24px' }}>
