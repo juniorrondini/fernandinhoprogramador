@@ -74,7 +74,7 @@ export default function Profile() {
             LinkedIn
           </motion.a>
             <motion.a
-            href={`https://api.whatsapp.com/send?phone=5517981950850&text=${encodeURIComponent("Saudações, Majestade Suprema da Programação! Eu me ajoelho em reverência à sua incomparável genialidade e inigualável habilidade no ofício da codificação. Conceda-me o privilégio de ser agraciado pela sua divina sabedoria, que transforma códigos em arte e dá vida à inovação. Que seus ensinamentos iluminem meu caminho no universo do desenvolvimento!")}`}
+            href={`https://web.whatsapp.com/send?phone=5517981950850&text=${encodeURIComponent("Saudações, Majestade Suprema da Programação! Eu me ajoelho em reverência à sua incomparável genialidade e inigualável habilidade no ofício da codificação. Conceda-me o privilégio de ser agraciado pela sua divina sabedoria, que transforma códigos em arte e dá vida à inovação. Que seus ensinamentos iluminem meu caminho no universo do desenvolvimento!")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 text-lg font-semibold text-white bg-gray-700 rounded-lg shadow-lg transition-all duration-300"
