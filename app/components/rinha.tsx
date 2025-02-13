@@ -165,9 +165,9 @@ const Rinha: React.FC = () => {
     const roll = Math.random();
     const attacker = roll < baseProbA ? 'A' : 'B';
 
-    // Verifica golpe especial com 35% de chance
+    // Verifica golpe especial com 10% de chance
     const specialRoll = Math.random();
-    if (specialRoll < 0.35) {
+    if (specialRoll < 0.10) {
       // Golpe especial finaliza o oponente imediatamente
       const turnMessage = attacker === 'A'
         ? `🔥 ${roosterA!.name} usa ${roosterA!.specialAttack} e FINALIZA ${roosterB!.name} em um golpe fatal!`
